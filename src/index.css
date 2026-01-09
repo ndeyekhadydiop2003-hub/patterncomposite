@@ -48,6 +48,11 @@
     --code-keyword: 291 47% 71%;
     --code-string: 142 71% 55%;
     --code-comment: 215 20% 45%;
+    --code-function: 199 89% 60%;
+    --code-class: 39 100% 65%;
+    --code-number: 32 95% 65%;
+    --code-operator: 210 40% 75%;
+    --code-punctuation: 210 40% 60%;
 
     --glow-primary: 142 71% 45%;
     --glow-accent: 199 89% 48%;
@@ -71,7 +76,95 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', sans-serif;
-  }
+}
+
+/* Prism.js syntax highlighting - VS Code Dark+ inspired theme */
+code[class*="language-"],
+pre[class*="language-"] {
+  color: hsl(var(--code-text));
+  text-shadow: none;
+  font-family: 'JetBrains Mono', monospace;
+  direction: ltr;
+  text-align: left;
+  white-space: pre;
+  word-spacing: normal;
+  word-break: normal;
+  line-height: 1.6;
+  tab-size: 2;
+  hyphens: none;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: hsl(var(--code-comment));
+  font-style: italic;
+}
+
+.token.punctuation {
+  color: hsl(var(--code-punctuation));
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: hsl(var(--code-number));
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: hsl(var(--code-string));
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: hsl(var(--code-operator));
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: hsl(var(--code-keyword));
+}
+
+.token.function,
+.token.method {
+  color: hsl(var(--code-function));
+}
+
+.token.class-name,
+.token.maybe-class-name {
+  color: hsl(var(--code-class));
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: hsl(39 100% 65%);
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
 
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
