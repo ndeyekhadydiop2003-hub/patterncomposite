@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { motion } from "framer-motion";
-import { Plus, FolderPlus, RotateCcw, Code2, GitBranch, Layers } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, FolderPlus, RotateCcw, Code2, GitBranch, Layers, Info, FileText, Folder as FolderIcon } from "lucide-react";
 import { TreeNode } from "@/components/TreeNode";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
@@ -60,9 +60,11 @@ export default function Index() {
   const [root, setRoot] = useState<Folder>(createDemoStructure);
   const [newItemName, setNewItemName] = useState("");
   const [newItemSize, setNewItemSize] = useState("10");
+  const [selectedNode, setSelectedNode] = useState<FileSystemComponent | null>(null);
 
   const resetStructure = useCallback(() => {
     setRoot(createDemoStructure());
+    setSelectedNode(null);
   }, []);
 
   const addFile = useCallback(() => {
@@ -149,7 +151,11 @@ export default function Index() {
                   Reset
                 </Button>
               </div>
-              <TreeNode node={root} />
+              <TreeNode 
+                node={root} 
+                selectedNode={selectedNode}
+                onSelect={setSelectedNode}
+              />
               <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-sm text-muted-foreground">
                   Taille totale:{" "}
@@ -159,6 +165,85 @@ export default function Index() {
                 </p>
               </div>
             </div>
+
+            {/* Details Panel */}
+            <AnimatePresence mode="wait">
+              {selectedNode && (
+                <motion.div
+                  key={selectedNode.name}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="border-gradient rounded-lg p-4 bg-card"
+                >
+                  <div className="flex items-center gap-2 mb-4">
+                    <Info className="w-4 h-4 text-accent" />
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      Détails de l'élément
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {/* Name */}
+                    <div className="flex items-center gap-3 p-3 rounded-md bg-muted">
+                      {selectedNode.isComposite() ? (
+                        <FolderIcon className="w-5 h-5 text-folder" />
+                      ) : (
+                        <FileText className="w-5 h-5 text-file" />
+                      )}
+                      <div>
+                        <p className="text-xs text-muted-foreground">Nom</p>
+                        <p className="font-mono font-medium">{selectedNode.name}</p>
+                      </div>
+                    </div>
+
+                    {/* Type */}
+                    <div className="flex items-center justify-between p-3 rounded-md bg-muted">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Type</p>
+                        <p className="font-medium">
+                          {selectedNode.isComposite() ? (
+                            <span className="text-folder">Composite (Folder)</span>
+                          ) : (
+                            <span className="text-file">Leaf (File)</span>
+                          )}
+                        </p>
+                      </div>
+                      <code className="text-xs bg-background px-2 py-1 rounded text-accent">
+                        isComposite(): {String(selectedNode.isComposite())}
+                      </code>
+                    </div>
+
+                    {/* Size */}
+                    <div className="p-3 rounded-md bg-muted">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Taille</p>
+                          <p className="font-mono font-bold text-lg text-primary">
+                            {selectedNode.getSize()} KB
+                          </p>
+                        </div>
+                        <code className="text-xs bg-background px-2 py-1 rounded text-accent">
+                          getSize()
+                        </code>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className="text-xs text-muted-foreground flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                          La même méthode <code className="text-accent">getSize()</code> est utilisée pour les fichiers et les dossiers
+                        </p>
+                        {selectedNode.isComposite() && (
+                          <p className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-folder" />
+                            Pour un dossier, la taille est calculée récursivement
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Add Controls */}
             <div className="border-gradient rounded-lg p-4 bg-card space-y-4">
