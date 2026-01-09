@@ -1,21 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, FileText, Folder, FolderOpen, Trash2 } from "lucide-react";
-import { FileSystemComponent, Folder as FolderClass } from "@/lib/composite-pattern";
 import { cn } from "@/lib/utils";
 
-interface TreeNodeProps {
-  node: FileSystemComponent;
-  depth?: number;
-  onRemove?: (node: FileSystemComponent) => void;
-  selectedNode?: FileSystemComponent | null;
-  onSelect?: (node: FileSystemComponent) => void;
-}
-
-export function TreeNode({ node, depth = 0, onRemove, selectedNode, onSelect }: TreeNodeProps) {
+export function TreeNode({ node, depth = 0, onRemove = null, selectedNode = null, onSelect = null }: any) {
   const [isExpanded, setIsExpanded] = useState(true);
   const isFolder = node.isComposite();
-  const children = isFolder ? (node as FolderClass).getChildren() : [];
+  const children = isFolder ? node.getChildren() : [];
   const isSelected = selectedNode === node;
 
   const handleClick = () => {
