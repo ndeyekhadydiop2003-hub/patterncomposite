@@ -115,12 +115,12 @@ export default function Index() {
         </div>
       </header>
 
-      <main className="container py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Interactive Demo */}
+      <main className="container py-8 max-w-4xl mx-auto">
+        <div className="flex flex-col gap-8">
+          {/* Interactive Demo Section */}
           <motion.section
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="space-y-6"
           >
@@ -311,10 +311,10 @@ export default function Index() {
             </div>
           </motion.section>
 
-          {/* Right Column - Code Examples */}
+          {/* Code Examples Section */}
           <motion.section
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
             className="space-y-6"
           >
