@@ -1,55 +1,51 @@
-// Interface Component - définit l'interface commune
-export interface FileSystemComponent {
-  name: string;
-  getSize(): number;
-  display(indent?: number): string;
-  isComposite(): boolean;
-}
-
 // Leaf - représente les objets finaux (fichiers)
-export class File implements FileSystemComponent {
-  constructor(public name: string, private size: number) {}
+export class File {
+  constructor(name, size) {
+    this.name = name;
+    this.size = size;
+  }
 
-  getSize(): number {
+  getSize() {
     return this.size;
   }
 
-  display(indent: number = 0): string {
+  display(indent = 0) {
     const prefix = "  ".repeat(indent);
     return `${prefix}📄 ${this.name} (${this.size} KB)`;
   }
 
-  isComposite(): boolean {
+  isComposite() {
     return false;
   }
 }
 
 // Composite - représente les conteneurs (dossiers)
-export class Folder implements FileSystemComponent {
-  private children: FileSystemComponent[] = [];
+export class Folder {
+  constructor(name) {
+    this.name = name;
+    this.children = [];
+  }
 
-  constructor(public name: string) {}
-
-  add(component: FileSystemComponent): void {
+  add(component) {
     this.children.push(component);
   }
 
-  remove(component: FileSystemComponent): void {
+  remove(component) {
     const index = this.children.indexOf(component);
     if (index > -1) {
       this.children.splice(index, 1);
     }
   }
 
-  getChildren(): FileSystemComponent[] {
+  getChildren() {
     return [...this.children];
   }
 
-  getSize(): number {
+  getSize() {
     return this.children.reduce((total, child) => total + child.getSize(), 0);
   }
 
-  display(indent: number = 0): string {
+  display(indent = 0) {
     const prefix = "  ".repeat(indent);
     let result = `${prefix}📁 ${this.name} (${this.getSize()} KB total)`;
     
@@ -60,13 +56,13 @@ export class Folder implements FileSystemComponent {
     return result;
   }
 
-  isComposite(): boolean {
+  isComposite() {
     return true;
   }
 }
 
 // Créer une structure de démonstration
-export function createDemoStructure(): Folder {
+export function createDemoStructure() {
   const root = new Folder("projet");
   
   const src = new Folder("src");

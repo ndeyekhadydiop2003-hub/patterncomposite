@@ -9,58 +9,52 @@ import {
   createDemoStructure,
   File,
   Folder,
-  FileSystemComponent,
 } from "@/lib/composite-pattern";
 
-const componentCode = `// Interface Component
-interface FileSystemComponent {
-  name: string;
-  getSize(): number;
-  display(): string;
-  isComposite(): boolean;
-}`;
-
 const leafCode = `// Leaf - objets finaux (fichiers)
-class File implements FileSystemComponent {
-  constructor(
-    public name: string, 
-    private size: number
-  ) {}
+class File {
+  constructor(name, size) {
+    this.name = name;
+    this.size = size;
+  }
 
-  getSize(): number {
+  getSize() {
     return this.size;
   }
 
-  isComposite(): boolean {
+  isComposite() {
     return false;
   }
 }`;
 
 const compositeCode = `// Composite - conteneurs (dossiers)
-class Folder implements FileSystemComponent {
-  private children: FileSystemComponent[] = [];
+class Folder {
+  constructor(name) {
+    this.name = name;
+    this.children = [];
+  }
 
-  add(component: FileSystemComponent) {
+  add(component) {
     this.children.push(component);
   }
 
-  getSize(): number {
+  getSize() {
     return this.children.reduce(
       (total, child) => total + child.getSize(), 
       0
     );
   }
 
-  isComposite(): boolean {
+  isComposite() {
     return true;
   }
 }`;
 
 export default function Index() {
-  const [root, setRoot] = useState<Folder>(createDemoStructure);
+  const [root, setRoot] = useState(createDemoStructure);
   const [newItemName, setNewItemName] = useState("");
   const [newItemSize, setNewItemSize] = useState("10");
-  const [selectedNode, setSelectedNode] = useState<FileSystemComponent | null>(null);
+  const [selectedNode, setSelectedNode] = useState(null);
 
   const resetStructure = useCallback(() => {
     setRoot(createDemoStructure());
@@ -114,7 +108,7 @@ export default function Index() {
                 Composite Pattern
               </h1>
               <p className="text-muted-foreground">
-                Design Pattern Structurel · JavaScript/TypeScript
+                Design Pattern Structurel · JavaScript
               </p>
             </div>
           </motion.div>
@@ -309,8 +303,8 @@ export default function Index() {
                 <li className="flex items-start gap-2">
                   <span className="text-primary mt-1">→</span>
                   <span>
-                    Les deux implémentent la même interface{" "}
-                    <code className="text-accent">FileSystemComponent</code>
+                    Les deux classes partagent les mêmes méthodes{" "}
+                    <code className="text-accent">getSize()</code> et <code className="text-accent">isComposite()</code>
                   </span>
                 </li>
               </ul>
@@ -329,9 +323,8 @@ export default function Index() {
               <h2 className="text-xl font-semibold">Implémentation</h2>
             </div>
 
-            <CodeBlock code={componentCode} title="Component Interface" />
-            <CodeBlock code={leafCode} title="Leaf (File)" />
-            <CodeBlock code={compositeCode} title="Composite (Folder)" />
+            <CodeBlock code={leafCode} title="Leaf (File)" language="javascript" />
+            <CodeBlock code={compositeCode} title="Composite (Folder)" language="javascript" />
 
             {/* Pattern Benefits */}
             <div className="border-gradient rounded-lg p-4 bg-card">
@@ -370,7 +363,7 @@ export default function Index() {
       {/* Footer */}
       <footer className="border-t border-border mt-12">
         <div className="container py-6 text-center text-sm text-muted-foreground">
-          Design Pattern Composite · GoF · JavaScript/TypeScript
+          Design Pattern Composite · GoF · JavaScript ES6
         </div>
       </footer>
     </div>
