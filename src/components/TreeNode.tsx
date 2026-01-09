@@ -8,12 +8,20 @@ interface TreeNodeProps {
   node: FileSystemComponent;
   depth?: number;
   onRemove?: (node: FileSystemComponent) => void;
+  selectedNode?: FileSystemComponent | null;
+  onSelect?: (node: FileSystemComponent) => void;
 }
 
-export function TreeNode({ node, depth = 0, onRemove }: TreeNodeProps) {
+export function TreeNode({ node, depth = 0, onRemove, selectedNode, onSelect }: TreeNodeProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const isFolder = node.isComposite();
   const children = isFolder ? (node as FolderClass).getChildren() : [];
+  const isSelected = selectedNode === node;
+
+  const handleClick = () => {
+    onSelect?.(node);
+    if (isFolder) setIsExpanded(!isExpanded);
+  };
 
   return (
     <div className="select-none">
@@ -24,10 +32,11 @@ export function TreeNode({ node, depth = 0, onRemove }: TreeNodeProps) {
         className={cn(
           "group flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition-all duration-200",
           "hover:bg-node-hover",
+          isSelected && "bg-primary/20 ring-1 ring-primary/50",
           isFolder ? "text-folder" : "text-file"
         )}
         style={{ paddingLeft: `${depth * 20 + 8}px` }}
-        onClick={() => isFolder && setIsExpanded(!isExpanded)}
+        onClick={handleClick}
       >
         {isFolder && (
           <motion.div
@@ -81,6 +90,8 @@ export function TreeNode({ node, depth = 0, onRemove }: TreeNodeProps) {
                 node={child}
                 depth={depth + 1}
                 onRemove={onRemove}
+                selectedNode={selectedNode}
+                onSelect={onSelect}
               />
             ))}
           </motion.div>
