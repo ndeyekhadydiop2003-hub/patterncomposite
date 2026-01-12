@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FolderPlus, RotateCcw, GitBranch, Layers, Info, FileText, Folder as FolderIcon } from "lucide-react";
+import { Plus, FolderPlus, RotateCcw, GitBranch, Layers, Info, FileText, Folder as FolderIcon, Code2 } from "lucide-react";
 import { TreeNode } from "@/components/TreeNode";
+import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -16,6 +17,76 @@ import {
   File,
   Folder,
 } from "@/lib/composite-pattern";
+
+// Code examples from the images
+const componentCode = `// Classe abstraite Component - base pour tous les éléments
+class FileSystemComponent {
+  constructor(name) {
+    this.name = name;
+  }
+
+  getSize() {
+    throw new Error("Méthode abstraite");
+  }
+
+  display(indent = 0) {
+    throw new Error("Méthode abstraite");
+  }
+}`;
+
+const leafCode = `// Leaf - représente un fichier (pas d'enfants)
+class File extends FileSystemComponent {
+  constructor(name, size) {
+    super(name);
+    this.size = size;
+  }
+
+  getSize() {
+    return this.size;
+  }
+
+  display(indent = 0) {
+    return " ".repeat(indent) + "📄 " + this.name;
+  }
+}`;
+
+const compositeCode = `// Composite - représente un dossier
+class Folder extends FileSystemComponent {
+  constructor(name) {
+    super(name);
+    this.children = [];
+  }
+
+  add(component) {
+    this.children.push(component);
+  }
+
+  remove(component) {
+    const index = this.children.indexOf(component);
+    if (index > -1) this.children.splice(index, 1);
+  }
+
+  getSize() {
+    // Parcours récursif de tous les enfants
+    return this.children.reduce(
+      (total, child) => total + child.getSize(),
+      0
+    );
+  }
+}`;
+
+const usageCode = `// Utilisation du pattern
+const root = new Folder("projet");
+
+const src = new Folder("src");
+src.add(new File("App.js", 10));
+src.add(new File("index.js", 3));
+
+root.add(src);
+root.add(new File("package.json", 4));
+
+// La même méthode fonctionne pour fichiers et dossiers
+console.log(root.getSize()); // 17 KB (somme récursive)`;
 
 // Helper function to get all folders recursively
 function getAllFolders(node, path = "") {
@@ -360,6 +431,30 @@ export default function Index() {
                   </span>
                 </li>
               </ul>
+            </div>
+          </motion.section>
+
+          {/* Implementation Section */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Code2 className="w-5 h-5 text-accent" />
+              <h2 className="text-xl font-semibold">Implémentation JavaScript</h2>
+            </div>
+
+            {/* Code blocks in 2 columns */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <CodeBlock code={componentCode} title="Component.js" language="javascript" />
+              <CodeBlock code={leafCode} title="Leaf.js" language="javascript" />
+            </div>
+            
+            <div className="grid md:grid-cols-2 gap-4">
+              <CodeBlock code={compositeCode} title="Composite.js" language="javascript" />
+              <CodeBlock code={usageCode} title="Usage.js" language="javascript" />
             </div>
           </motion.section>
         </div>
