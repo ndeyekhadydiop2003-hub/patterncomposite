@@ -1,94 +1,123 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, FolderPlus, RotateCcw, Code2, GitBranch, Layers, Info, FileText, Folder as FolderIcon } from "lucide-react";
+import { Plus, FolderPlus, RotateCcw, GitBranch, Layers, Info, FileText, Folder as FolderIcon } from "lucide-react";
 import { TreeNode } from "@/components/TreeNode";
-import { CodeBlock } from "@/components/CodeBlock";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   createDemoStructure,
   File,
   Folder,
 } from "@/lib/composite-pattern";
 
-const leafCode = `// Leaf - objets finaux (fichiers)
-class File {
-  constructor(name, size) {
-    this.name = name;
-    this.size = size;
+// Helper function to get all folders recursively
+function getAllFolders(node, path = "") {
+  const folders = [];
+  const currentPath = path ? `${path}/${node.name}` : node.name;
+  
+  if (node.isComposite()) {
+    folders.push({ folder: node, path: currentPath });
+    node.getChildren().forEach((child) => {
+      if (child.isComposite()) {
+        folders.push(...getAllFolders(child, currentPath));
+      }
+    });
   }
+  
+  return folders;
+}
 
-  getSize() {
-    return this.size;
-  }
-
-  isComposite() {
-    return false;
-  }
-}`;
-
-const compositeCode = `// Composite - conteneurs (dossiers)
-class Folder {
-  constructor(name) {
-    this.name = name;
-    this.children = [];
-  }
-
-  add(component) {
-    this.children.push(component);
-  }
-
-  getSize() {
-    return this.children.reduce(
-      (total, child) => total + child.getSize(), 
-      0
+// Helper function to find a folder by path
+function findFolderByPath(root, path) {
+  if (path === root.name) return root;
+  
+  const parts = path.split("/").slice(1);
+  let current = root;
+  
+  for (const part of parts) {
+    const found = current.getChildren().find(
+      (child) => child.isComposite() && child.name === part
     );
+    if (found) {
+      current = found;
+    } else {
+      return null;
+    }
   }
+  
+  return current;
+}
 
-  isComposite() {
-    return true;
+// Deep clone function for the tree structure
+function cloneTree(node) {
+  if (!node.isComposite()) {
+    return new File(node.name, node.size);
   }
-}`;
+  
+  const clonedFolder = new Folder(node.name);
+  node.getChildren().forEach((child) => {
+    clonedFolder.add(cloneTree(child));
+  });
+  
+  return clonedFolder;
+}
 
 export default function Index() {
   const [root, setRoot] = useState(createDemoStructure);
   const [newItemName, setNewItemName] = useState("");
   const [newItemSize, setNewItemSize] = useState("10");
   const [selectedNode, setSelectedNode] = useState(null);
+  const [targetFolderPath, setTargetFolderPath] = useState("");
+
+  // Get all available folders for the select
+  const availableFolders = useMemo(() => getAllFolders(root), [root]);
+
+  // Set default target folder to root if not set
+  useMemo(() => {
+    if (!targetFolderPath && availableFolders.length > 0) {
+      setTargetFolderPath(availableFolders[0].path);
+    }
+  }, [availableFolders, targetFolderPath]);
 
   const resetStructure = useCallback(() => {
     setRoot(createDemoStructure());
     setSelectedNode(null);
+    setTargetFolderPath("");
   }, []);
 
   const addFile = useCallback(() => {
-    if (!newItemName.trim()) return;
-    const newRoot = createDemoStructure();
-    const size = parseInt(newItemSize) || 10;
-    newRoot.add(new File(newItemName, size));
-    // Copy existing children
-    root.getChildren().forEach((child) => {
-      if (child.name !== newItemName) {
-        if (child.isComposite()) {
-          newRoot.add(child as Folder);
-        } else {
-          newRoot.add(child as File);
-        }
-      }
-    });
-    setRoot(newRoot);
-    setNewItemName("");
-  }, [newItemName, newItemSize, root]);
+    if (!newItemName.trim() || !targetFolderPath) return;
+    
+    const newRoot = cloneTree(root);
+    const targetFolder = findFolderByPath(newRoot, targetFolderPath);
+    
+    if (targetFolder) {
+      const size = parseInt(newItemSize) || 10;
+      targetFolder.add(new File(newItemName, size));
+      setRoot(newRoot);
+      setNewItemName("");
+    }
+  }, [newItemName, newItemSize, root, targetFolderPath]);
 
   const addFolder = useCallback(() => {
-    if (!newItemName.trim()) return;
-    const newFolder = new Folder(newItemName);
-    const newRoot = new Folder(root.name);
-    root.getChildren().forEach((child) => newRoot.add(child));
-    newRoot.add(newFolder);
-    setRoot(newRoot);
-    setNewItemName("");
-  }, [newItemName, root]);
+    if (!newItemName.trim() || !targetFolderPath) return;
+    
+    const newRoot = cloneTree(root);
+    const targetFolder = findFolderByPath(newRoot, targetFolderPath);
+    
+    if (targetFolder) {
+      targetFolder.add(new Folder(newItemName));
+      setRoot(newRoot);
+      setNewItemName("");
+    }
+  }, [newItemName, root, targetFolderPath]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -244,6 +273,29 @@ export default function Index() {
               <h3 className="text-sm font-medium text-muted-foreground">
                 Ajouter un élément
               </h3>
+              
+              {/* Target Folder Selector */}
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">
+                  Dossier de destination
+                </label>
+                <Select value={targetFolderPath} onValueChange={setTargetFolderPath}>
+                  <SelectTrigger className="bg-muted border-border">
+                    <SelectValue placeholder="Sélectionner un dossier..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableFolders.map(({ path }) => (
+                      <SelectItem key={path} value={path}>
+                        <span className="flex items-center gap-2">
+                          <FolderIcon className="w-4 h-4 text-folder" />
+                          {path}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex gap-2">
                 <Input
                   placeholder="Nom..."
@@ -308,53 +360,6 @@ export default function Index() {
                   </span>
                 </li>
               </ul>
-            </div>
-          </motion.section>
-
-          {/* Code Examples Section */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="space-y-6"
-          >
-            <div className="flex items-center gap-2 mb-4">
-              <Code2 className="w-5 h-5 text-accent" />
-              <h2 className="text-xl font-semibold">Implémentation</h2>
-            </div>
-
-            <CodeBlock code={leafCode} title="Leaf (File)" language="javascript" />
-            <CodeBlock code={compositeCode} title="Composite (Folder)" language="javascript" />
-
-            {/* Pattern Benefits */}
-            <div className="border-gradient rounded-lg p-4 bg-card">
-              <h3 className="font-semibold mb-3 text-accent">Avantages</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="p-3 rounded-md bg-muted">
-                  <span className="font-medium">Uniformité</span>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Traite objets simples et composés de manière identique
-                  </p>
-                </div>
-                <div className="p-3 rounded-md bg-muted">
-                  <span className="font-medium">Extensibilité</span>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Facile d'ajouter de nouveaux types de composants
-                  </p>
-                </div>
-                <div className="p-3 rounded-md bg-muted">
-                  <span className="font-medium">Récursivité</span>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Les opérations se propagent naturellement
-                  </p>
-                </div>
-                <div className="p-3 rounded-md bg-muted">
-                  <span className="font-medium">Simplicité</span>
-                  <p className="text-muted-foreground text-xs mt-1">
-                    Code client simplifié grâce à l'interface commune
-                  </p>
-                </div>
-              </div>
             </div>
           </motion.section>
         </div>
