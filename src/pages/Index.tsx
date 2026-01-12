@@ -292,20 +292,15 @@ export default function Index() {
                     </div>
 
                     {/* Type */}
-                    <div className="flex items-center justify-between p-3 rounded-md bg-muted">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Type</p>
-                        <p className="font-medium">
-                          {selectedNode.isComposite() ? (
-                            <span className="text-folder">Composite (Folder)</span>
-                          ) : (
-                            <span className="text-file">Leaf (File)</span>
-                          )}
-                        </p>
-                      </div>
-                      <code className="text-xs bg-background px-2 py-1 rounded text-accent">
-                        isComposite(): {String(selectedNode.isComposite())}
-                      </code>
+                    <div className="p-3 rounded-md bg-muted">
+                      <p className="text-xs text-muted-foreground">Type</p>
+                      <p className="font-medium">
+                        {selectedNode.isComposite() ? (
+                          <span className="text-folder">Composite (Folder)</span>
+                        ) : (
+                          <span className="text-file">Leaf (File)</span>
+                        )}
+                      </p>
                     </div>
 
                     {/* Size */}
